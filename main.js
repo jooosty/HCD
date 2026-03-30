@@ -27,7 +27,9 @@ if (SpeechRecognition) {
             if (e.results[i].isFinal) {
                 const sentence = e.results[i][0].transcript.trim();
                 const alreadyHasPunctuation = /[.!?]$/.test(sentence);
-                finalTranscript += sentence + (alreadyHasPunctuation ? " " : ". ");
+                const isQuestion = /^(wie|wat|waar|wanneer|waarom|hoe|welk|welke|welken|kan|kun|kunt|mag|moet|wil|wilt|weet|heeft|hebben|ben|bent|is|zijn|doe|doet|ga|gaat|kom|komt|heb|hebt)\b/i.test(sentence);
+                const punctuation = alreadyHasPunctuation ? " " : (isQuestion ? "? " : ". ");
+                finalTranscript += sentence + punctuation;
             } else {
                 interim = e.results[i][0].transcript;
             }
