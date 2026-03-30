@@ -1,27 +1,36 @@
+<!DOCTYPE html>
+<html lang="nl">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spraakberichten</title>
+</head>
 <body>
-  <h1>Spraakberichten</h1>
-  <p class="sub">Neem een spraakbericht op of plak een transcript. De zinnen worden gesplitst zodat je per boodschap kunt reageren.</p>
+    <h1>Spraakberichten</h1>
+    <p class="sub">Neem een spraakbericht op of plak een transcript. De zinnen worden gesplitst zodat je per boodschap kunt
+        reageren.</p>
 
-  <div class="card">
-    <div class="rec-row">
-      <button id="recBtn" aria-label="Start opname" aria-pressed="false">
-        <span class="dot" aria-hidden="true"></span>
-        <span id="recLabel">Opname starten</span>
-      </button>
-      <span id="timer" aria-live="polite"></span>
-      <span id="recStatus" class="sr-only" aria-live="assertive"></span>
+    <div class="card">
+        <div class="rec-row">
+            <button id="recBtn" aria-label="Start opname" aria-pressed="false">
+                <span class="dot" aria-hidden="true"></span>
+                <span id="recLabel">Opname starten</span>
+            </button>
+            <span id="timer" aria-live="polite"></span>
+            <span id="recStatus" class="sr-only" aria-live="assertive"></span>
+        </div>
+
+        <label class="field-label" for="transcript">Of plak hier een transcript:</label>
+        <textarea id="transcript" placeholder="Bijv: Hey Berend, hoe gaat het! Ik wilde even vragen of je volgende week dinsdag tijd hebt. Oh en vergeet niet de factuur te sturen. Het project ziet er trouwens geweldig uit!"></textarea>
+
+        <div class="btn-row">
+            <button id="splitBtn">Bericht opsplitsen</button>
+            <button id="wisBtn" class="wis-btn">Wissen</button>
+        </div>
+        <p id="err" class="error" role="alert" aria-live="assertive"></p>
     </div>
 
-    <label class="field-label" for="transcript">Of plak hier een transcript:</label>
-    <textarea id="transcript" placeholder="Bijv: Hey Berend, hoe gaat het! Ik wilde even vragen of je volgende week dinsdag tijd hebt. Oh en vergeet niet de factuur te sturen. Het project ziet er trouwens geweldig uit!"></textarea>
-
-    <div class="btn-row">
-      <button id="splitBtn">Bericht opsplitsen</button>
-      <button id="wisBtn" class="wis-btn">Wissen</button>
-    </div>
-    <p id="err" class="error" role="alert" aria-live="assertive"></p>
-  </div>
-
-  <div id="results" aria-live="polite"></div>
+    <div id="results" aria-live="polite"></div>
 </body>
 </html>
