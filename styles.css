@@ -32,7 +32,7 @@ p.sub {
     margin-bottom: 1rem;
 }
 
-.rec-row {
+.record-row {
     display: flex;
     align-items: center;
     gap: 12px;
@@ -63,7 +63,7 @@ button:disabled {
     cursor: not-allowed;
 }
 
-#recBtn.recording {
+#recordButton.recording {
     border-color: #A32D2D;
     color: #f28b8b;
     background: #501313;
@@ -128,14 +128,14 @@ textarea:focus {
     border-color: #85B7EB;
 }
 
-.btn-row {
+.button-row {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
     margin-top: 10px;
 }
 
-.wis-btn {
+.clear-button {
     font-size: 12px;
     padding: 6px 12px;
 }
@@ -148,7 +148,7 @@ textarea:focus {
 
 /* ---- Results list ---- */
 
-.msg-label {
+.messages-label {
     font-size: 12px;
     font-weight: 500;
     color: #999;
@@ -157,7 +157,7 @@ textarea:focus {
     letter-spacing: 0.04em;
 }
 
-.zin {
+.message {
     background: #2a2a2a;
     border-radius: 8px;
     padding: 12px 14px;
@@ -167,7 +167,7 @@ textarea:focus {
     align-items: flex-start;
 }
 
-.zin-num {
+.message-number {
     font-size: 12px;
     font-weight: 500;
     color: #85B7EB;
@@ -180,9 +180,32 @@ textarea:focus {
     margin-top: 2px;
 }
 
-.zin-text {
+.message-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 10px;
+}
+
+.message-text {
     font-size: 14px;
     line-height: 1.6;
-    flex: 1;
     color: #f0f0f0;
+}
+
+.message-reply {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.message-reply textarea {
+    min-height: 70px;
+    font-size: 13px;
+}
+
+.copy-button {
+    align-self: flex-start;
+    font-size: 12px;
+    padding: 6px 12px;
 }

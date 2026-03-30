@@ -2,13 +2,13 @@ let timerInterval, seconds = 0;
 let recognition = null;
 let finalTranscript = "";
 
-const recBtn = document.getElementById("recBtn");
-const recLabel = document.getElementById("recLabel");
+const recordButton = document.getElementById("recordButton");
+const recordLabel = document.getElementById("recordLabel");
 const timer = document.getElementById("timer");
-const recStatus = document.getElementById("recStatus");
+const recordStatus = document.getElementById("recordStatus");
 const transcriptBox = document.getElementById("transcript");
-const splitBtn = document.getElementById("splitBtn");
-const wisBtn = document.getElementById("wisBtn");
+const splitButton = document.getElementById("splitButton");
+const clearButton = document.getElementById("clearButton");
 const results = document.getElementById("results");
 const err = document.getElementById("err");
 
@@ -25,7 +25,9 @@ if (SpeechRecognition) {
         let interim = "";
         for (let i = e.resultIndex; i < e.results.length; i++) {
             if (e.results[i].isFinal) {
-                finalTranscript += e.results[i][0].transcript + " ";
+                const sentence = e.results[i][0].transcript.trim();
+                const alreadyHasPunctuation = /[.!?]$/.test(sentence);
+                finalTranscript += sentence + (alreadyHasPunctuation ? " " : ". ");
             } else {
                 interim = e.results[i][0].transcript;
             }
@@ -34,45 +36,45 @@ if (SpeechRecognition) {
     };
 
     recognition.onerror = (e) => {
-        recStatus.textContent = "Microfoon fout: " + e.error;
+        recordStatus.textContent = "Microfoon fout: " + e.error;
         stopRecording();
     };
 
     recognition.onend = () => {
-        if (recBtn.classList.contains("recording")) stopRecording();
+        if (recordButton.classList.contains("recording")) stopRecording();
     };
 
 } else {
-    recBtn.disabled = true;
-    recBtn.title = "Spraakherkenning niet beschikbaar in deze browser. Gebruik Chrome of Edge.";
+    recordButton.disabled = true;
+    recordButton.title = "Spraakherkenning niet beschikbaar in deze browser. Gebruik Chrome of Edge.";
 }
 
 /* ---- Recording controls ---- */
 function stopRecording() {
-    recBtn.classList.remove("recording");
-    recLabel.textContent = "Opname starten";
-    recBtn.setAttribute("aria-pressed", "false");
-    recBtn.setAttribute("aria-label", "Start opname");
-    recStatus.textContent = "Opname gestopt";
+    recordButton.classList.remove("recording");
+    recordLabel.textContent = "Opname starten";
+    recordButton.setAttribute("aria-pressed", "false");
+    recordButton.setAttribute("aria-label", "Start opname");
+    recordStatus.textContent = "Opname gestopt";
     clearInterval(timerInterval);
     timer.textContent = "";
 }
 
-recBtn.addEventListener("click", () => {
+recordButton.addEventListener("click", () => {
     if (!recognition) return;
 
-    if (recBtn.classList.contains("recording")) {
+    if (recordButton.classList.contains("recording")) {
         recognition.stop();
         stopRecording();
     } else {
         finalTranscript = "";
         transcriptBox.value = "";
         recognition.start();
-        recBtn.classList.add("recording");
-        recLabel.textContent = "Stop opname";
-        recBtn.setAttribute("aria-pressed", "true");
-        recBtn.setAttribute("aria-label", "Stop opname");
-        recStatus.textContent = "Opname bezig";
+        recordButton.classList.add("recording");
+        recordLabel.textContent = "Stop opname";
+        recordButton.setAttribute("aria-pressed", "true");
+        recordButton.setAttribute("aria-label", "Stop opname");
+        recordStatus.textContent = "Opname bezig";
         seconds = 0;
         timer.textContent = "0:00";
         timerInterval = setInterval(() => {
@@ -85,7 +87,7 @@ recBtn.addEventListener("click", () => {
 });
 
 /* ---- Wissen ---- */
-wisBtn.addEventListener("click", () => {
+clearButton.addEventListener("click", () => {
     transcriptBox.value = "";
     finalTranscript = "";
     results.innerHTML = "";
@@ -103,7 +105,7 @@ function splitZinnen(tekst) {
 }
 
 /* ---- Splitsen ---- */
-splitBtn.addEventListener("click", () => {
+splitButton.addEventListener("click", () => {
     err.textContent = "";
     const tekst = transcriptBox.value.trim();
 
@@ -116,16 +118,34 @@ splitBtn.addEventListener("click", () => {
 
     results.innerHTML = `
         <div class="card">
-            <p class="msg-label">${zinnen.length} boodschap${zinnen.length !== 1 ? "pen" : ""} gevonden</p>
+            <p class="messages-label">${zinnen.length} boodschap${zinnen.length !== 1 ? "pen" : ""} gevonden</p>
             <div role="list" aria-label="Gevonden boodschappen">
                 ${zinnen.map((z, i) => `
-                    <div class="zin" role="listitem"
-                         aria-label="Boodschap ${i + 1}: ${z}">
-                        <span class="zin-num" aria-hidden="true">${i + 1}</span>
-                        <div class="zin-text">${z}</div>
+                    <div class="message" role="listitem" aria-label="Boodschap ${i + 1}: ${z}">
+                        <span class="message-number" aria-hidden="true">${i + 1}</span>
+                        <div class="message-content">
+                            <div class="message-text">${z}</div>
+                            <div class="message-reply">
+                                <label class="field-label" for="input-${i}">Antwoord:</label>
+                                <textarea id="input-${i}" aria-label="Antwoord op boodschap ${i + 1}" placeholder="Typ hier je antwoord..."></textarea>
+                                <button class="copy-button" data-index="${i}" aria-label="Kopieer antwoord op boodschap ${i + 1}">Kopieer</button>
+                            </div>
+                        </div>
                     </div>
                 `).join("")}
             </div>
         </div>
     `;
+
+    results.querySelectorAll(".copy-button").forEach(button => {
+        button.addEventListener("click", () => {
+            const i = button.dataset.index;
+            const tekst = document.getElementById(`input-${i}`).value.trim();
+            if (!tekst) return;
+            navigator.clipboard.writeText(tekst).then(() => {
+                button.textContent = "Gekopieerd!";
+                setTimeout(() => button.textContent = "Kopieer", 2000);
+            });
+        });
+    });
 });

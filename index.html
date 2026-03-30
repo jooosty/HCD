@@ -11,21 +11,21 @@
     <p class="sub">Neem een spraakbericht op of plak een transcript. De zinnen worden gesplitst zodat je per boodschap kunt reageren.</p>
 
     <div class="card">
-        <div class="rec-row">
-            <button id="recBtn" aria-label="Start opname" aria-pressed="false">
+        <div class="record-row">
+            <button id="recordButton" aria-label="Start opname" aria-pressed="false">
                 <span class="dot" aria-hidden="true"></span>
-                <span id="recLabel">Opname starten</span>
+                <span id="recordLabel">Opname starten</span>
             </button>
             <span id="timer" aria-live="polite"></span>
-            <span id="recStatus" class="sr-only" aria-live="assertive"></span>
+            <span id="recordStatus" class="sr-only" aria-live="assertive"></span>
         </div>
 
         <label class="field-label" for="transcript">Of plak hier een transcript:</label>
         <textarea id="transcript" placeholder="Bijv: Hey Berend, hoe gaat het! Ik wilde even vragen of je volgende week dinsdag tijd hebt. Oh en vergeet niet de factuur te sturen. Het project ziet er trouwens geweldig uit!"></textarea>
 
-        <div class="btn-row">
-            <button id="splitBtn">Bericht opsplitsen</button>
-            <button id="wisBtn" class="wis-btn">Wissen</button>
+        <div class="button-row">
+            <button id="splitButton">Bericht opsplitsen</button>
+            <button id="clearButton" class="clear-button">Wissen</button>
         </div>
         <p id="err" class="error" role="alert" aria-live="assertive"></p>
     </div>
