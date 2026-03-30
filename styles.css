@@ -145,3 +145,44 @@ textarea:focus {
     color: #f28b8b;
     padding: 0.5rem 0;
 }
+
+/* ---- Results list ---- */
+
+.msg-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #999;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.zin {
+    background: #2a2a2a;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+}
+
+.zin-num {
+    font-size: 12px;
+    font-weight: 500;
+    color: #85B7EB;
+    background: #042C53;
+    border-radius: 6px;
+    padding: 2px 8px;
+    min-width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.zin-text {
+    font-size: 14px;
+    line-height: 1.6;
+    flex: 1;
+    color: #f0f0f0;
+}
