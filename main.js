@@ -129,8 +129,14 @@ splitButton.addEventListener("click", () => {
                             <div class="message-text">${z}</div>
                             <div class="message-reply">
                                 <label class="field-label" for="input-${i}">Antwoord:</label>
-                                <textarea id="input-${i}" aria-label="Antwoord op boodschap ${i + 1}" placeholder="Typ hier je antwoord..."></textarea>
-                                <button class="copy-button" data-index="${i}" aria-label="Kopieer antwoord op boodschap ${i + 1}">Kopieer</button>
+                                <textarea id="input-${i}" aria-label="Antwoord op boodschap ${i + 1}" placeholder="Typ of spreek je antwoord..."></textarea>
+                                <div class="reply-button-row">
+                                    <button class="voice-reply-button" data-index="${i}" aria-label="Spreek antwoord in voor boodschap ${i + 1}" aria-pressed="false">
+                                        <span class="dot" aria-hidden="true"></span>
+                                        <span class="voice-reply-label">Spreek in</span>
+                                    </button>
+                                    <button class="copy-button" data-index="${i}" aria-label="Kopieer antwoord op boodschap ${i + 1}">Kopieer</button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -139,6 +145,79 @@ splitButton.addEventListener("click", () => {
         </div>
     `;
 
+    /* ---- Voice reply per message ---- */
+    let activeReplyRecognition = null;
+    let activeReplyButton = null;
+
+    results.querySelectorAll(".voice-reply-button").forEach(button => {
+        button.addEventListener("click", () => {
+            const i = button.dataset.index;
+            const replyTextarea = document.getElementById(`input-${i}`);
+
+            if (button.classList.contains("recording")) {
+                activeReplyRecognition.stop();
+                return;
+            }
+
+            if (activeReplyRecognition) {
+                activeReplyRecognition.stop();
+                activeReplyButton.classList.remove("recording");
+                activeReplyButton.setAttribute("aria-pressed", "false");
+                activeReplyButton.querySelector(".voice-reply-label").textContent = "Spreek in";
+            }
+
+            if (!SpeechRecognition) {
+                replyTextarea.placeholder = "Spraakherkenning niet beschikbaar in deze browser.";
+                return;
+            }
+
+            const replyRecognition = new SpeechRecognition();
+            replyRecognition.lang = "nl-NL";
+            replyRecognition.continuous = true;
+            replyRecognition.interimResults = true;
+
+            let replyFinal = replyTextarea.value;
+
+            replyRecognition.onresult = (e) => {
+                let interim = "";
+                for (let j = e.resultIndex; j < e.results.length; j++) {
+                    if (e.results[j].isFinal) {
+                        const sentence = e.results[j][0].transcript.trim();
+                        const hasPunctuation = /[.!?]$/.test(sentence);
+                        const isQuestion = /^(wie|wat|waar|wanneer|waarom|hoe|welk|welke|kan|kun|kunt|mag|moet|wil|wilt|weet|heeft|hebben|ben|bent|is|zijn|doe|doet|ga|gaat|kom|komt|heb|hebt)\b/i.test(sentence);
+                        const punctuation = hasPunctuation ? " " : (isQuestion ? "? " : ". ");
+                        replyFinal += sentence + punctuation;
+                    } else {
+                        interim = e.results[j][0].transcript;
+                    }
+                }
+                replyTextarea.value = (replyFinal + interim).trim();
+            };
+
+            replyRecognition.onerror = () => {
+                button.classList.remove("recording");
+                button.setAttribute("aria-pressed", "false");
+                button.querySelector(".voice-reply-label").textContent = "Spreek in";
+            };
+
+            replyRecognition.onend = () => {
+                button.classList.remove("recording");
+                button.setAttribute("aria-pressed", "false");
+                button.querySelector(".voice-reply-label").textContent = "Spreek in";
+                activeReplyRecognition = null;
+                activeReplyButton = null;
+            };
+
+            replyRecognition.start();
+            activeReplyRecognition = replyRecognition;
+            activeReplyButton = button;
+            button.classList.add("recording");
+            button.setAttribute("aria-pressed", "true");
+            button.querySelector(".voice-reply-label").textContent = "Stop";
+        });
+    });
+
+    /* ---- Copy reply ---- */
     results.querySelectorAll(".copy-button").forEach(button => {
         button.addEventListener("click", () => {
             const i = button.dataset.index;

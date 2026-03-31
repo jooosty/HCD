@@ -209,3 +209,19 @@ textarea:focus {
     font-size: 12px;
     padding: 6px 12px;
 }
+.reply-button-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.voice-reply-button {
+    font-size: 12px;
+    padding: 6px 12px;
+}
+
+.voice-reply-button.recording {
+    border-color: #A32D2D;
+    color: #f28b8b;
+    background: #501313;
+}
