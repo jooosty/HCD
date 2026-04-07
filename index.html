@@ -10,14 +10,17 @@
     <h1>Spraakberichten</h1>
     <p class="sub">Neem een spraakbericht op of plak een transcript. De zinnen worden gesplitst zodat je per boodschap kunt reageren.</p>
 
+    <!-- Live region for announcing actions to screen readers -->
+    <div id="announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
     <div class="card">
         <div class="record-row">
             <button id="recordButton" aria-label="Start opname" aria-pressed="false">
                 <span class="dot" aria-hidden="true"></span>
                 <span id="recordLabel">Opname starten</span>
             </button>
-            <span id="timer" aria-live="polite"></span>
-            <span id="recordStatus" class="sr-only" aria-live="assertive"></span>
+            <span id="timer" aria-live="polite" aria-label="Opnametijd"></span>
+            <span id="recordStatus" class="sr-only" aria-live="assertive" aria-atomic="true"></span>
         </div>
 
         <label class="field-label" for="transcript">Of plak hier een transcript:</label>
@@ -30,7 +33,7 @@
         <p id="err" class="error" role="alert" aria-live="assertive"></p>
     </div>
 
-    <div id="results" aria-live="polite"></div>
+    <div id="results"></div>
 
     <script src="main.js"></script>
 </body>

@@ -99,12 +99,14 @@ button:disabled {
     font-family: monospace;
 }
 
+/* Visually hidden but readable by screen readers */
 .sr-only {
     position: absolute;
     width: 1px;
     height: 1px;
     overflow: hidden;
     clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
 }
 
 .field-label {
@@ -191,7 +193,6 @@ textarea:focus {
     border-color: #444;
 }
 
-/* Expanded / selected state */
 .message.expanded {
     border-color: #85B7EB;
     background: #1e2a38;
@@ -224,7 +225,7 @@ textarea:focus {
     color: #f0f0f0;
 }
 
-/* Hint shown on unexpanded messages */
+/* Hint shown on unexpanded messages — hidden from screen readers via aria-hidden in JS */
 .message:not(.expanded) .message-text::after {
     content: " — druk Enter om te beantwoorden";
     font-size: 12px;
@@ -235,6 +236,11 @@ textarea:focus {
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+/* Fix: display:flex overrides the hidden attribute, this ensures hidden always wins */
+.message-reply[hidden] {
+    display: none;
 }
 
 .message-reply textarea {
@@ -263,8 +269,4 @@ textarea:focus {
     border-color: #A32D2D;
     color: #f28b8b;
     background: #501313;
-}
-
-.message-reply[hidden] {
-    display: none;
 }

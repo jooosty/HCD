@@ -11,6 +11,16 @@ const splitButton = document.getElementById("splitButton");
 const clearButton = document.getElementById("clearButton");
 const results = document.getElementById("results");
 const err = document.getElementById("err");
+const announcer = document.getElementById("announcer");
+
+/* ---- Announce to screen reader ---- */
+function announce(message) {
+    // Clear first so repeated identical messages still fire
+    announcer.textContent = "";
+    requestAnimationFrame(() => {
+        announcer.textContent = message;
+    });
+}
 
 /* ---- Speech Recognition setup ---- */
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -38,7 +48,9 @@ if (SpeechRecognition) {
     };
 
     recognition.onerror = (e) => {
-        recordStatus.textContent = "Microfoon fout: " + e.error;
+        const msg = "Microfoon fout: " + e.error;
+        recordStatus.textContent = msg;
+        announce(msg);
         stopRecording();
     };
 
@@ -49,6 +61,7 @@ if (SpeechRecognition) {
 } else {
     recordButton.disabled = true;
     recordButton.title = "Spraakherkenning niet beschikbaar in deze browser. Gebruik Chrome of Edge.";
+    announce("Spraakherkenning is niet beschikbaar in deze browser. Gebruik Chrome of Edge.");
 }
 
 /* ---- Recording controls ---- */
@@ -58,6 +71,7 @@ function stopRecording() {
     recordButton.setAttribute("aria-pressed", "false");
     recordButton.setAttribute("aria-label", "Start opname");
     recordStatus.textContent = "Opname gestopt";
+    announce("Opname gestopt.");
     clearInterval(timerInterval);
     timer.textContent = "";
 }
@@ -77,6 +91,7 @@ recordButton.addEventListener("click", () => {
         recordButton.setAttribute("aria-pressed", "true");
         recordButton.setAttribute("aria-label", "Stop opname");
         recordStatus.textContent = "Opname bezig";
+        announce("Opname gestart. Spreek nu.");
         seconds = 0;
         timer.textContent = "0:00";
         timerInterval = setInterval(() => {
@@ -94,6 +109,7 @@ clearButton.addEventListener("click", () => {
     finalTranscript = "";
     results.innerHTML = "";
     err.textContent = "";
+    announce("Alles gewist.");
     transcriptBox.focus();
 });
 
@@ -112,10 +128,19 @@ function openMessage(messageEl) {
 
     const replySection = messageEl.querySelector(".message-reply");
     const voiceBtn = messageEl.querySelector(".voice-reply-button");
+    const index = parseInt(messageEl.dataset.index) + 1;
+    const messageText = messageEl.querySelector(".message-text").textContent;
 
     messageEl.classList.add("expanded");
+    // Update aria-label to reflect expanded state and remove "druk Enter" hint
     messageEl.setAttribute("aria-expanded", "true");
+    messageEl.setAttribute("aria-label", `Boodschap ${index}: ${messageText}`);
+    // Remove tabindex so focus moves naturally into the reply area
+    messageEl.setAttribute("tabindex", "-1");
+
     replySection.hidden = false;
+
+    announce(`Boodschap ${index} geopend. Spreek-in knop geselecteerd.`);
 
     if (voiceBtn) voiceBtn.focus();
 }
@@ -127,6 +152,7 @@ splitButton.addEventListener("click", () => {
 
     if (!tekst) {
         err.textContent = "Plak eerst een transcript of neem een bericht op.";
+        announce("Fout: plak eerst een transcript of neem een bericht op.");
         return;
     }
 
@@ -134,27 +160,34 @@ splitButton.addEventListener("click", () => {
 
     results.innerHTML = `
         <div class="card">
-            <p class="messages-label">${zinnen.length} boodschap${zinnen.length !== 1 ? "pen" : ""} gevonden</p>
+            <p class="messages-label" aria-hidden="true">${zinnen.length} boodschap${zinnen.length !== 1 ? "pen" : ""} gevonden</p>
             <div role="list" aria-label="Gevonden boodschappen">
                 ${zinnen.map((z, i) => `
                     <div class="message"
                          role="listitem"
                          tabindex="0"
-                         aria-label="Boodschap ${i + 1}: ${z}. Druk op Enter om te beantwoorden."
+                         aria-label="Boodschap ${i + 1} van ${zinnen.length}: ${z}. Druk op Enter om te beantwoorden."
                          aria-expanded="false"
                          data-index="${i}">
                         <span class="message-number" aria-hidden="true">${i + 1}</span>
                         <div class="message-content">
-                            <div class="message-text">${z}</div>
+                            <div class="message-text" aria-hidden="true">${z}</div>
                             <div class="message-reply" hidden>
                                 <label class="field-label" for="input-${i}">Antwoord:</label>
-                                <textarea id="input-${i}" aria-label="Antwoord op boodschap ${i + 1}" placeholder="Typ of spreek je antwoord..."></textarea>
+                                <textarea id="input-${i}"
+                                          aria-label="Antwoord op boodschap ${i + 1}: ${z}"
+                                          placeholder="Typ of spreek je antwoord..."></textarea>
                                 <div class="reply-button-row">
-                                    <button class="voice-reply-button" data-index="${i}" aria-label="Spreek antwoord in voor boodschap ${i + 1}" aria-pressed="false">
+                                    <button class="voice-reply-button"
+                                            data-index="${i}"
+                                            aria-label="Spreek antwoord in voor boodschap ${i + 1}"
+                                            aria-pressed="false">
                                         <span class="dot" aria-hidden="true"></span>
                                         <span class="voice-reply-label">Spreek in</span>
                                     </button>
-                                    <button class="copy-button" data-index="${i}" aria-label="Kopieer antwoord op boodschap ${i + 1}">Kopieer</button>
+                                    <button class="copy-button"
+                                            data-index="${i}"
+                                            aria-label="Kopieer antwoord op boodschap ${i + 1}">Kopieer</button>
                                 </div>
                             </div>
                         </div>
@@ -163,6 +196,9 @@ splitButton.addEventListener("click", () => {
             </div>
         </div>
     `;
+
+    // Announce how many messages were found
+    announce(`${zinnen.length} boodschap${zinnen.length !== 1 ? "pen" : ""} gevonden. Gebruik Tab om door de boodschappen te navigeren en druk Enter om te beantwoorden.`);
 
     /* ---- Keyboard: Enter/Space to open message ---- */
     results.querySelectorAll(".message").forEach(messageEl => {
@@ -199,11 +235,13 @@ splitButton.addEventListener("click", () => {
                 activeReplyRecognition.stop();
                 activeReplyButton.classList.remove("recording");
                 activeReplyButton.setAttribute("aria-pressed", "false");
+                activeReplyButton.setAttribute("aria-label", `Spreek antwoord in voor boodschap ${parseInt(activeReplyButton.dataset.index) + 1}`);
                 activeReplyButton.querySelector(".voice-reply-label").textContent = "Spreek in";
             }
 
             if (!SpeechRecognition) {
                 replyTextarea.placeholder = "Spraakherkenning niet beschikbaar in deze browser.";
+                announce("Spraakherkenning is niet beschikbaar in deze browser.");
                 return;
             }
 
@@ -233,15 +271,19 @@ splitButton.addEventListener("click", () => {
             replyRecognition.onerror = () => {
                 button.classList.remove("recording");
                 button.setAttribute("aria-pressed", "false");
+                button.setAttribute("aria-label", `Spreek antwoord in voor boodschap ${parseInt(i) + 1}`);
                 button.querySelector(".voice-reply-label").textContent = "Spreek in";
+                announce("Microfoon fout. Opname gestopt.");
             };
 
             replyRecognition.onend = () => {
                 button.classList.remove("recording");
                 button.setAttribute("aria-pressed", "false");
+                button.setAttribute("aria-label", `Spreek antwoord in voor boodschap ${parseInt(i) + 1}`);
                 button.querySelector(".voice-reply-label").textContent = "Spreek in";
                 activeReplyRecognition = null;
                 activeReplyButton = null;
+                announce("Opname gestopt. Antwoord opgeslagen in tekstveld.");
             };
 
             replyRecognition.start();
@@ -249,7 +291,9 @@ splitButton.addEventListener("click", () => {
             activeReplyButton = button;
             button.classList.add("recording");
             button.setAttribute("aria-pressed", "true");
+            button.setAttribute("aria-label", `Stop opname voor boodschap ${parseInt(i) + 1}`);
             button.querySelector(".voice-reply-label").textContent = "Stop";
+            announce(`Opname gestart voor boodschap ${parseInt(i) + 1}. Spreek nu.`);
         });
     });
 
@@ -259,10 +303,17 @@ splitButton.addEventListener("click", () => {
             e.stopPropagation();
             const i = button.dataset.index;
             const tekst = document.getElementById(`input-${i}`).value.trim();
-            if (!tekst) return;
+            if (!tekst) {
+                announce("Geen antwoord om te kopiëren.");
+                return;
+            }
             navigator.clipboard.writeText(tekst).then(() => {
                 button.textContent = "Gekopieerd!";
-                setTimeout(() => button.textContent = "Kopieer", 2000);
+                announce(`Antwoord op boodschap ${parseInt(i) + 1} gekopieerd.`);
+                setTimeout(() => {
+                    button.textContent = "Kopieer";
+                    button.setAttribute("aria-label", `Kopieer antwoord op boodschap ${parseInt(i) + 1}`);
+                }, 2000);
             });
         });
     });
