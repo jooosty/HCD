@@ -99,7 +99,6 @@ button:disabled {
     font-family: monospace;
 }
 
-/* Visually hidden but readable by screen readers */
 .sr-only {
     position: absolute;
     width: 1px;
@@ -225,7 +224,6 @@ textarea:focus {
     color: #f0f0f0;
 }
 
-/* Hint shown on unexpanded messages — hidden from screen readers via aria-hidden in JS */
 .message:not(.expanded) .message-text::after {
     content: " — druk Enter om te beantwoorden";
     font-size: 12px;
@@ -238,7 +236,7 @@ textarea:focus {
     gap: 6px;
 }
 
-/* Fix: display:flex overrides the hidden attribute, this ensures hidden always wins */
+/* Fix: display:flex overrides hidden attribute */
 .message-reply[hidden] {
     display: none;
 }
@@ -246,12 +244,6 @@ textarea:focus {
 .message-reply textarea {
     min-height: 70px;
     font-size: 13px;
-}
-
-.copy-button {
-    align-self: flex-start;
-    font-size: 12px;
-    padding: 6px 12px;
 }
 
 .reply-button-row {

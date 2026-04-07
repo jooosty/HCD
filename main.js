@@ -15,7 +15,6 @@ const announcer = document.getElementById("announcer");
 
 /* ---- Announce to screen reader ---- */
 function announce(message) {
-    // Clear first so repeated identical messages still fire
     announcer.textContent = "";
     requestAnimationFrame(() => {
         announcer.textContent = message;
@@ -122,6 +121,24 @@ function splitZinnen(tekst) {
     return delen.length > 1 ? delen : [tekst.trim()];
 }
 
+/* ---- Close a message if textarea is empty ---- */
+function closeMessage(messageEl) {
+    const replySection = messageEl.querySelector(".message-reply");
+    const textarea = messageEl.querySelector("textarea");
+    const index = parseInt(messageEl.dataset.index) + 1;
+    const messageText = messageEl.querySelector(".message-text").textContent;
+
+    if (!textarea || textarea.value.trim() !== "") return;
+
+    messageEl.classList.remove("expanded");
+    messageEl.setAttribute("aria-expanded", "false");
+    messageEl.setAttribute("aria-label", `Boodschap ${index} van ${messageEl.dataset.total}: ${messageText}. Druk op Enter om te beantwoorden.`);
+    messageEl.setAttribute("tabindex", "0");
+    replySection.hidden = true;
+
+    announce(`Boodschap ${index} gesloten.`);
+}
+
 /* ---- Open a message: show reply area and focus voice button ---- */
 function openMessage(messageEl) {
     if (messageEl.classList.contains("expanded")) return;
@@ -132,10 +149,8 @@ function openMessage(messageEl) {
     const messageText = messageEl.querySelector(".message-text").textContent;
 
     messageEl.classList.add("expanded");
-    // Update aria-label to reflect expanded state and remove "druk Enter" hint
     messageEl.setAttribute("aria-expanded", "true");
     messageEl.setAttribute("aria-label", `Boodschap ${index}: ${messageText}`);
-    // Remove tabindex so focus moves naturally into the reply area
     messageEl.setAttribute("tabindex", "-1");
 
     replySection.hidden = false;
@@ -157,26 +172,24 @@ splitButton.addEventListener("click", () => {
     }
 
     const zinnen = splitZinnen(tekst);
+    const total = zinnen.length;
 
     results.innerHTML = `
         <div class="card">
-            <p class="messages-label" aria-hidden="true">${zinnen.length} boodschap${zinnen.length !== 1 ? "pen" : ""} gevonden</p>
+            <p class="messages-label" aria-hidden="true">${total} boodschap${total !== 1 ? "pen" : ""} gevonden</p>
             <div role="list" aria-label="Gevonden boodschappen">
                 ${zinnen.map((z, i) => `
                     <div class="message"
                          role="listitem"
                          tabindex="0"
-                         aria-label="Boodschap ${i + 1} van ${zinnen.length}: ${z}. Druk op Enter om te beantwoorden."
+                         aria-label="Boodschap ${i + 1} van ${total}: ${z}. Druk op Enter om te beantwoorden."
                          aria-expanded="false"
-                         data-index="${i}">
+                         data-index="${i}"
+                         data-total="${total}">
                         <span class="message-number" aria-hidden="true">${i + 1}</span>
                         <div class="message-content">
                             <div class="message-text" aria-hidden="true">${z}</div>
                             <div class="message-reply" hidden>
-                                <label class="field-label" for="input-${i}">Antwoord:</label>
-                                <textarea id="input-${i}"
-                                          aria-label="Antwoord op boodschap ${i + 1}: ${z}"
-                                          placeholder="Typ of spreek je antwoord..."></textarea>
                                 <div class="reply-button-row">
                                     <button class="voice-reply-button"
                                             data-index="${i}"
@@ -185,10 +198,11 @@ splitButton.addEventListener("click", () => {
                                         <span class="dot" aria-hidden="true"></span>
                                         <span class="voice-reply-label">Spreek in</span>
                                     </button>
-                                    <button class="copy-button"
-                                            data-index="${i}"
-                                            aria-label="Kopieer antwoord op boodschap ${i + 1}">Kopieer</button>
                                 </div>
+                                <label class="field-label" for="input-${i}">Antwoord:</label>
+                                <textarea id="input-${i}"
+                                          aria-label="Antwoord op boodschap ${i + 1}: ${z}"
+                                          placeholder="Typ of spreek je antwoord..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -197,22 +211,29 @@ splitButton.addEventListener("click", () => {
         </div>
     `;
 
-    // Announce how many messages were found
-    announce(`${zinnen.length} boodschap${zinnen.length !== 1 ? "pen" : ""} gevonden. Gebruik Tab om door de boodschappen te navigeren en druk Enter om te beantwoorden.`);
+    announce(`${total} boodschap${total !== 1 ? "pen" : ""} gevonden. Gebruik Tab om door de boodschappen te navigeren en druk Enter om te beantwoorden.`);
 
     /* ---- Keyboard: Enter/Space to open message ---- */
     results.querySelectorAll(".message").forEach(messageEl => {
         messageEl.addEventListener("keydown", (e) => {
+            // If the key came from inside the reply area, let it through — don't intercept
+            if (e.target.closest(".message-reply")) return;
+
             if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
                 openMessage(messageEl);
             }
         });
 
-        // Clicking the message text also opens it
         messageEl.addEventListener("click", (e) => {
             if (e.target.closest(".message-reply")) return;
             openMessage(messageEl);
+        });
+
+        // Close when focus leaves the message entirely and textarea is empty
+        messageEl.addEventListener("focusout", (e) => {
+            if (messageEl.contains(e.relatedTarget)) return;
+            closeMessage(messageEl);
         });
     });
 
@@ -294,27 +315,6 @@ splitButton.addEventListener("click", () => {
             button.setAttribute("aria-label", `Stop opname voor boodschap ${parseInt(i) + 1}`);
             button.querySelector(".voice-reply-label").textContent = "Stop";
             announce(`Opname gestart voor boodschap ${parseInt(i) + 1}. Spreek nu.`);
-        });
-    });
-
-    /* ---- Copy reply ---- */
-    results.querySelectorAll(".copy-button").forEach(button => {
-        button.addEventListener("click", (e) => {
-            e.stopPropagation();
-            const i = button.dataset.index;
-            const tekst = document.getElementById(`input-${i}`).value.trim();
-            if (!tekst) {
-                announce("Geen antwoord om te kopiëren.");
-                return;
-            }
-            navigator.clipboard.writeText(tekst).then(() => {
-                button.textContent = "Gekopieerd!";
-                announce(`Antwoord op boodschap ${parseInt(i) + 1} gekopieerd.`);
-                setTimeout(() => {
-                    button.textContent = "Kopieer";
-                    button.setAttribute("aria-label", `Kopieer antwoord op boodschap ${parseInt(i) + 1}`);
-                }, 2000);
-            });
         });
     });
 
