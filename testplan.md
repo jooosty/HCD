@@ -71,16 +71,6 @@ Let tijdens de test op het volgende:
 - Vraagt hij om bevestiging na acties zoals kopiëren of wissen?
 - Navigeert hij lineair of springt hij door de pagina?
 
----
-
-## 5. Na de test
-
-Verwerk de bevindingen direct na de sessie. Noteer:
-
-- Welke taken gingen soepel, welke niet?
-- Welke uitspraken van Berend waren het meest waardevol?
-- Wat ga je aanpassen in het prototype voor de volgende iteratie?
-
 
 
 ## antwoorde
@@ -93,3 +83,98 @@ Verwerk de bevindingen direct na de sessie. Noteer:
 - doro zinnen heen "tabben" en dan enter om te die zin te openen om te beantwoorden
 - dat je bij het openen van een zin meteen in het antwoordveld zit, zodat je meteen kan beginnen met typen of spreken
 - nvda als screenreader
+
+
+
+# Testplan — Iteratie 2
+
+## Wat is er veranderd sinds iteratie 1
+
+Dit zijn de aanpassingen die zijn gedaan op basis van de vorige testsessie:
+
+- Boodschappen zijn nu tabbaar: je kunt met Tab door de lijst navigeren
+- Druk op Enter op een boodschap om hem te openen en te beantwoorden
+- Bij het openen van een boodschap wordt de Spreek-in knop automatisch geselecteerd
+- Tabvolgorde binnen een boodschap: eerst Spreek-in knop, dan tekstveld
+- Als je een boodschap verlaat zonder iets in te vullen, sluit hij automatisch
+- Aankondigingen via screenreader bij elke actie (openen, sluiten, opname starten/stoppen, wissen)
+- Kopieerknop is verwijderd
+
+---
+
+## 1. Functies die we testen
+
+- Tab-navigatie door de lijst met boodschappen
+- Enter om een boodschap te openen
+- Automatische focus op de Spreek-in knop bij openen
+- Spreek-in knop activeren met Enter
+- Tabben van Spreek-in knop naar tekstveld
+- Automatisch sluiten van een boodschap als je wegtabt zonder iets in te vullen
+- Screenreader aankondigingen bij alle acties
+- Wisknop om alles te resetten
+
+---
+
+## 2. Testtaken
+
+Laat Berend de volgende taken uitvoeren. Geef minimale uitleg vooraf — observeer hoe hij het prototype ontdekt.
+
+| # | Taak | Methode | Aandachtspunt |
+|---|---|---|---|
+| 1 | Open het prototype en navigeer door de pagina. | Vrij verkennen met NVDA | Wat hoort hij als eerste? Begrijpt hij de structuur? |
+| 2 | Plak transcript 1 en splits het op. | Transcript plakken, splitknop activeren | Hoort hij de aankondiging hoeveel boodschappen er zijn? |
+| 3 | Tab door alle boodschappen zonder iets te openen. | Tab-toets | Worden de boodschappen correct voorgelezen met nummer en tekst? |
+| 4 | Open boodschap 1 met Enter. | Enter op eerste boodschap | Hoort hij de aankondiging dat de boodschap geopend is? Staat de focus op de Spreek-in knop? |
+| 5 | Activeer de Spreek-in knop met Enter en spreek een antwoord in. | Enter op Spreek-in knop | Werkt Enter op de knop? Hoort hij dat de opname gestart is? |
+| 6 | Stop de opname en tab naar het tekstveld. | Tab na opname | Staat de focus correct op het tekstveld? Hoort hij de inhoud? |
+| 7 | Tab weg van boodschap 1 zonder iets in te vullen (leeg tekstveld). | Tab uit boodschap | Sluit de boodschap automatisch? Hoort hij de aankondiging "gesloten"? |
+| 8 | Open boodschap 2, typ een antwoord, en tab weg. | Tekst typen en wegtabben | Blijft de boodschap open omdat er tekst in staat? |
+| 9 | Plak transcript 6 (lang bericht) en navigeer door alle boodschappen. | Lang transcript testen | Hoe gaat hij om met veel boodschappen? Raakt hij het overzicht kwijt? |
+| 10 | Neem een spraakbericht op via de hoofdopnameknop bovenaan. | Microfoon opname | Hoort hij de aankondiging? Begrijpt hij het verschil met de Spreek-in knop per boodschap? |
+| 11 | Wis alles via de wisknop. | Wisknop | Hoort hij de aankondiging "alles gewist"? Is het duidelijk dat de lijst weg is? |
+
+---
+
+## 3. Vragen tijdens de test
+
+Stel deze vragen tijdens of direct na de testtaken. Stel ze open — laat Berend uitpraten.
+
+| # | Vraag | Doel |
+|---|---|---|
+| 1 | Wat hoorde je als eerste toen je de pagina opende? | Eerste indruk via NVDA begrijpen |
+| 2 | Was het duidelijk dat je kon tabben door de boodschappen? | Testen of de tabnavigatie ontdekbaar is |
+| 3 | Wat hoorde je toen je Enter drukte op een boodschap? | Kwaliteit van de aankondiging bij openen beoordelen |
+| 4 | Stond de focus waar je het verwachtte na het openen? | Controleren of autofocus op Spreek-in knop logisch voelt |
+| 5 | Lukte het om de Spreek-in knop met Enter te activeren? | Testen of Enter op de knop werkt en voelt als verwacht |
+| 6 | Merkte je dat een lege boodschap automatisch sloot? | Begrijpelijkheid van het automatisch sluiten beoordelen |
+| 7 | Hoe vond je de volgorde: eerst Spreek-in knop, dan tekstveld? | Controleren of de tabvolgorde logisch aanvoelt |
+| 8 | Miste je de kopieerknop, of was het prima zonder? | Beoordelen of het verwijderen van de kopieerknop de goede keuze was |
+| 9 | Waren de aankondigingen (opname gestart, boodschap gesloten, etc.) duidelijk en op het juiste moment? | Kwaliteit van alle aria-live meldingen beoordelen |
+| 10 | Was er iets wat je verwachtte te horen maar niet hoorde? | Ontbrekende feedback opsporen |
+| 11 | Wat vond je het beste werken in vergelijking met de vorige versie? | Verbeteringen bevestigen |
+| 12 | Wat vond je nog steeds verwarrend of frustrerend? | Resterende knelpunten identificeren voor iteratie 3 |
+
+---
+
+## 4. Observatiepunten voor de ontwerper
+
+Let tijdens de test op het volgende:
+
+- Gebruikt Berend Tab lineair of springt hij met NVDA-sneltoetsen door de pagina?
+- Hoe lang duurt het voordat hij een boodschap opent na het splitsen?
+- Merkt hij vanzelf dat de Spreek-in knop automatisch focus heeft, of zoekt hij nog?
+- Reageert hij op de aankondigingen, of lijkt hij ze te missen of negeren?
+- Wat doet hij als hij per ongeluk een boodschap sluit die hij wilde beantwoorden?
+- Begrijpt hij het verschil tussen de hoofdopnameknop bovenaan en de Spreek-in knop per boodschap?
+- Vraagt hij om bevestiging na het wissen, of vertrouwt hij de aankondiging?
+- Navigeert hij terug naar al beantwoorde boodschappen, of gaat hij altijd vooruit?
+
+---
+
+## Notities tijdens de sessie
+in gesplitte versie ook kunnen luisterne
+een kluster toevoegen dus alles in een keer kunnen versturen
+sneltoets voor alles ingevulden dingen kunnen versturen
+zinnen kunnen samenvoegen
+geluidje bij verzenden
+geen cursief of dikgedrutkt, normale lettertype maakt niet heel veel uit
