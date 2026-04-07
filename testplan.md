@@ -80,3 +80,16 @@ Verwerk de bevindingen direct na de sessie. Noteer:
 - Welke taken gingen soepel, welke niet?
 - Welke uitspraken van Berend waren het meest waardevol?
 - Wat ga je aanpassen in het prototype voor de volgende iteratie?
+
+
+
+## antwoorde
+
+- Datums uitschrijven
+- op elke knop of iets wat je doet iets van feedback geven (bijv: "Je hebt op de split knop gedrukt, het bericht wordt nu opgesplitst in losse boodschappen.")
+- zoveel mogelijke dingen die niet nodig zijn weghalen, zodat het zo simpel mogelijk is
+- geluid niet veel verschil tussen luid en zacht
+- goed letten op contrast
+- doro zinnen heen "tabben" en dan enter om te die zin te openen om te beantwoorden
+- dat je bij het openen van een zin meteen in het antwoordveld zit, zodat je meteen kan beginnen met typen of spreken
+- nvda als screenreader

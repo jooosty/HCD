@@ -106,6 +106,20 @@ function splitZinnen(tekst) {
     return delen.length > 1 ? delen : [tekst.trim()];
 }
 
+/* ---- Open a message: show reply area and focus voice button ---- */
+function openMessage(messageEl) {
+    if (messageEl.classList.contains("expanded")) return;
+
+    const replySection = messageEl.querySelector(".message-reply");
+    const voiceBtn = messageEl.querySelector(".voice-reply-button");
+
+    messageEl.classList.add("expanded");
+    messageEl.setAttribute("aria-expanded", "true");
+    replySection.hidden = false;
+
+    if (voiceBtn) voiceBtn.focus();
+}
+
 /* ---- Splitsen ---- */
 splitButton.addEventListener("click", () => {
     err.textContent = "";
@@ -123,11 +137,16 @@ splitButton.addEventListener("click", () => {
             <p class="messages-label">${zinnen.length} boodschap${zinnen.length !== 1 ? "pen" : ""} gevonden</p>
             <div role="list" aria-label="Gevonden boodschappen">
                 ${zinnen.map((z, i) => `
-                    <div class="message" role="listitem" aria-label="Boodschap ${i + 1}: ${z}">
+                    <div class="message"
+                         role="listitem"
+                         tabindex="0"
+                         aria-label="Boodschap ${i + 1}: ${z}. Druk op Enter om te beantwoorden."
+                         aria-expanded="false"
+                         data-index="${i}">
                         <span class="message-number" aria-hidden="true">${i + 1}</span>
                         <div class="message-content">
                             <div class="message-text">${z}</div>
-                            <div class="message-reply">
+                            <div class="message-reply" hidden>
                                 <label class="field-label" for="input-${i}">Antwoord:</label>
                                 <textarea id="input-${i}" aria-label="Antwoord op boodschap ${i + 1}" placeholder="Typ of spreek je antwoord..."></textarea>
                                 <div class="reply-button-row">
@@ -145,12 +164,29 @@ splitButton.addEventListener("click", () => {
         </div>
     `;
 
+    /* ---- Keyboard: Enter/Space to open message ---- */
+    results.querySelectorAll(".message").forEach(messageEl => {
+        messageEl.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openMessage(messageEl);
+            }
+        });
+
+        // Clicking the message text also opens it
+        messageEl.addEventListener("click", (e) => {
+            if (e.target.closest(".message-reply")) return;
+            openMessage(messageEl);
+        });
+    });
+
     /* ---- Voice reply per message ---- */
     let activeReplyRecognition = null;
     let activeReplyButton = null;
 
     results.querySelectorAll(".voice-reply-button").forEach(button => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", (e) => {
+            e.stopPropagation();
             const i = button.dataset.index;
             const replyTextarea = document.getElementById(`input-${i}`);
 
@@ -219,7 +255,8 @@ splitButton.addEventListener("click", () => {
 
     /* ---- Copy reply ---- */
     results.querySelectorAll(".copy-button").forEach(button => {
-        button.addEventListener("click", () => {
+        button.addEventListener("click", (e) => {
+            e.stopPropagation();
             const i = button.dataset.index;
             const tekst = document.getElementById(`input-${i}`).value.trim();
             if (!tekst) return;
@@ -229,4 +266,8 @@ splitButton.addEventListener("click", () => {
             });
         });
     });
+
+    // Focus first message so user can start tabbing immediately
+    const firstMessage = results.querySelector(".message");
+    if (firstMessage) firstMessage.focus();
 });

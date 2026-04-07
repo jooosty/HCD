@@ -58,6 +58,11 @@ button:hover {
     background: #333;
 }
 
+button:focus-visible {
+    outline: 2px solid #85B7EB;
+    outline-offset: 2px;
+}
+
 button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
@@ -165,6 +170,32 @@ textarea:focus {
     display: flex;
     gap: 12px;
     align-items: flex-start;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.message:focus {
+    outline: none;
+    border-color: #85B7EB;
+    background: #2f2f2f;
+}
+
+.message:focus-visible {
+    outline: none;
+    border-color: #85B7EB;
+    background: #2f2f2f;
+}
+
+.message:hover:not(.expanded) {
+    border-color: #444;
+}
+
+/* Expanded / selected state */
+.message.expanded {
+    border-color: #85B7EB;
+    background: #1e2a38;
+    cursor: default;
 }
 
 .message-number {
@@ -193,6 +224,13 @@ textarea:focus {
     color: #f0f0f0;
 }
 
+/* Hint shown on unexpanded messages */
+.message:not(.expanded) .message-text::after {
+    content: " — druk Enter om te beantwoorden";
+    font-size: 12px;
+    color: #666;
+}
+
 .message-reply {
     display: flex;
     flex-direction: column;
@@ -209,6 +247,7 @@ textarea:focus {
     font-size: 12px;
     padding: 6px 12px;
 }
+
 .reply-button-row {
     display: flex;
     gap: 8px;
@@ -224,4 +263,8 @@ textarea:focus {
     border-color: #A32D2D;
     color: #f28b8b;
     background: #501313;
+}
+
+.message-reply[hidden] {
+    display: none;
 }
