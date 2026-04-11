@@ -2,23 +2,46 @@ let timerInterval, seconds = 0;
 let recognition = null;
 let finalTranscript = "";
 
-const recordButton = document.getElementById("recordButton");
-const recordLabel = document.getElementById("recordLabel");
-const timer = document.getElementById("timer");
-const recordStatus = document.getElementById("recordStatus");
+const recordButton  = document.getElementById("recordButton");
+const recordLabel   = document.getElementById("recordLabel");
+const timer         = document.getElementById("timer");
+const recordStatus  = document.getElementById("recordStatus");
 const transcriptBox = document.getElementById("transcript");
-const splitButton = document.getElementById("splitButton");
-const clearButton = document.getElementById("clearButton");
-const results = document.getElementById("results");
-const err = document.getElementById("err");
-const announcer = document.getElementById("announcer");
+const splitButton   = document.getElementById("splitButton");
+const clearButton   = document.getElementById("clearButton");
+const results       = document.getElementById("results");
+const err           = document.getElementById("err");
+const announcer     = document.getElementById("announcer");
 
-/* ---- Announce to screen reader ---- */
+/* ------------------------------------------------------------------ */
+/* Announce to screen reader                                           */
+/* Double rAF ensures NVDA/JAWS/VoiceOver all re-read the region      */
+/* ------------------------------------------------------------------ */
 function announce(message) {
     announcer.textContent = "";
     requestAnimationFrame(() => {
-        announcer.textContent = message;
+        requestAnimationFrame(() => {
+            announcer.textContent = message;
+        });
     });
+}
+
+/* ---- Send sound via Web Audio API ---- */
+function playSendSound() {
+    try {
+        const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+        const osc  = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(520, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(780, ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.25);
+    } catch (_) {}
 }
 
 /* ---- Speech Recognition setup ---- */
@@ -121,46 +144,57 @@ function splitZinnen(tekst) {
     return delen.length > 1 ? delen : [tekst.trim()];
 }
 
-/* ---- Close a message if textarea is empty ---- */
-function closeMessage(messageEl) {
-    const replySection = messageEl.querySelector(".message-reply");
-    const textarea = messageEl.querySelector("textarea");
-    const index = parseInt(messageEl.dataset.index) + 1;
-    const messageText = messageEl.querySelector(".message-text").textContent;
+/* ---- Collect all filled answers and send ---- */
+function verstuurAntwoorden() {
+    const antwoorden = [];
+    results.querySelectorAll(".message").forEach((messageEl) => {
+        const i           = messageEl.dataset.index;
+        const messageText = messageEl.querySelector(".message-text").textContent.trim();
+        const textarea    = document.getElementById(`input-${i}`);
+        if (textarea && textarea.value.trim()) {
+            antwoorden.push({ boodschap: messageText, antwoord: textarea.value.trim() });
+        }
+    });
 
-    if (!textarea || textarea.value.trim() !== "") return;
+    if (antwoorden.length === 0) {
+        err.textContent = "Geen antwoorden om te versturen.";
+        announce("Geen antwoorden om te versturen.");
+        return;
+    }
 
-    messageEl.classList.remove("expanded");
-    messageEl.setAttribute("aria-expanded", "false");
-    messageEl.setAttribute("aria-label", `Boodschap ${index} van ${messageEl.dataset.total}: ${messageText}. Druk op Enter om te beantwoorden.`);
-    messageEl.setAttribute("tabindex", "0");
-    replySection.hidden = true;
+    playSendSound();
 
-    announce(`Boodschap ${index} gesloten.`);
+    const samenvatting = antwoorden.map((a, i) =>
+        `Boodschap ${i + 1}: "${a.boodschap}"\nAntwoord: ${a.antwoord}`
+    ).join("\n\n");
+    console.log("Verstuur:\n" + samenvatting);
+
+    const count = antwoorden.length;
+    const msg   = `${count} antwoord${count !== 1 ? "en" : ""} verstuurd.`;
+    announce(msg);
+
+    /* Visible + AT feedback via aria-live region */
+    const sendFeedback = document.getElementById("sendFeedback");
+    if (sendFeedback) {
+        sendFeedback.textContent = "✓ " + msg;
+        sendFeedback.removeAttribute("hidden");
+        setTimeout(() => sendFeedback.setAttribute("hidden", ""), 3500);
+    }
 }
 
-/* ---- Open a message: show reply area and focus voice button ---- */
-function openMessage(messageEl) {
-    if (messageEl.classList.contains("expanded")) return;
+/* ---- Global Ctrl+Enter / Cmd+Enter shortcut to send ---- */
+document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+        if (results.querySelector(".message")) {
+            e.preventDefault();
+            verstuurAntwoorden();
+        }
+    }
+});
 
-    const replySection = messageEl.querySelector(".message-reply");
-    const voiceBtn = messageEl.querySelector(".voice-reply-button");
-    const index = parseInt(messageEl.dataset.index) + 1;
-    const messageText = messageEl.querySelector(".message-text").textContent;
-
-    messageEl.classList.add("expanded");
-    messageEl.setAttribute("aria-expanded", "true");
-    messageEl.setAttribute("aria-label", `Boodschap ${index}: ${messageText}`);
-    messageEl.setAttribute("tabindex", "-1");
-
-    replySection.hidden = false;
-
-    announce(`Boodschap ${index} geopend. Spreek-in knop geselecteerd.`);
-
-    if (voiceBtn) voiceBtn.focus();
-}
-
-/* ---- Splitsen ---- */
+/* ================================================================== */
+/* SPLITSEN                                                            */
+/* ================================================================== */
 splitButton.addEventListener("click", () => {
     err.textContent = "";
     const tekst = transcriptBox.value.trim();
@@ -172,79 +206,187 @@ splitButton.addEventListener("click", () => {
     }
 
     const zinnen = splitZinnen(tekst);
-    const total = zinnen.length;
+    const total  = zinnen.length;
 
+    /*
+     * ARIA design
+     * -----------
+     * - Each message is role="group" labeled by its <h3>.
+     * - <h3> lets screen reader users jump by heading (H key in NVDA/JAWS).
+     * - "Beantwoorden" is a real <button> — no div tricks needed.
+     * - reply section uses both `hidden` + `aria-hidden` to block
+     *   virtual-cursor access when collapsed.
+     * - Merge checkboxes have an explicit <label> (sr-only) for AT.
+     * - shortcut hint in send button is aria-hidden — spoken via aria-label.
+     * - sendFeedback has aria-live="polite" + aria-atomic so the full
+     *   message is read when it appears.
+     */
     results.innerHTML = `
         <div class="card">
-            <p class="messages-label" aria-hidden="true">${total} boodschap${total !== 1 ? "pen" : ""} gevonden</p>
+            <p id="results-summary"
+               class="messages-label"
+               aria-live="polite"
+               aria-atomic="true">
+                ${total} boodschap${total !== 1 ? "pen" : ""} gevonden
+            </p>
+
             <div role="list" aria-label="Gevonden boodschappen">
                 ${zinnen.map((z, i) => `
                     <div class="message"
-                         role="listitem"
-                         tabindex="0"
-                         aria-label="Boodschap ${i + 1} van ${total}: ${z}. Druk op Enter om te beantwoorden."
-                         aria-expanded="false"
+                         role="group"
+                         aria-labelledby="msg-heading-${i}"
                          data-index="${i}"
                          data-total="${total}">
+
                         <span class="message-number" aria-hidden="true">${i + 1}</span>
+
                         <div class="message-content">
-                            <div class="message-text" aria-hidden="true">${z}</div>
-                            <div class="message-reply" hidden>
+                            <!-- h3 makes this navigable via heading keys in NVDA/JAWS/VO -->
+                            <h3 class="message-text" id="msg-heading-${i}">
+                                <span class="sr-only">Boodschap ${i + 1} van ${total}:</span>${z}
+                            </h3>
+
+                            <!-- "Beantwoorden" button — visible until reply is open -->
+                            <button class="open-reply-button"
+                                    type="button"
+                                    data-index="${i}"
+                                    aria-controls="reply-section-${i}"
+                                    aria-expanded="false"
+                                    aria-describedby="msg-heading-${i}">
+                                Beantwoorden
+                            </button>
+
+                            <!-- Reply panel — hidden + aria-hidden while closed -->
+                            <div class="message-reply"
+                                 id="reply-section-${i}"
+                                 role="region"
+                                 aria-label="Antwoord op boodschap ${i + 1}"
+                                 hidden
+                                 aria-hidden="true">
+
                                 <div class="reply-button-row">
                                     <button class="voice-reply-button"
+                                            type="button"
                                             data-index="${i}"
                                             aria-label="Spreek antwoord in voor boodschap ${i + 1}"
                                             aria-pressed="false">
                                         <span class="dot" aria-hidden="true"></span>
-                                        <span class="voice-reply-label">Spreek in</span>
+                                        <span class="voice-reply-label" aria-hidden="true">Spreek in</span>
                                     </button>
                                 </div>
-                                <label class="field-label" for="input-${i}">Antwoord:</label>
+
+                                <label class="field-label" for="input-${i}">
+                                    Antwoord:
+                                </label>
                                 <textarea id="input-${i}"
-                                          aria-label="Antwoord op boodschap ${i + 1}: ${z}"
+                                          aria-describedby="msg-heading-${i}"
                                           placeholder="Typ of spreek je antwoord..."></textarea>
+
+                                <button class="close-reply-button"
+                                        type="button"
+                                        data-index="${i}"
+                                        aria-label="Sluit antwoordveld voor boodschap ${i + 1}">
+                                    Sluiten
+                                </button>
                             </div>
                         </div>
                     </div>
                 `).join("")}
             </div>
+
+            <div class="action-row" role="group" aria-label="Acties voor alle boodschappen">
+                <button id="sendButton"
+                        type="button"
+                        class="send-button"
+                        aria-label="Verstuur alle antwoorden, sneltoets Control Enter">
+                    Versturen
+                    <span class="shortcut-hint" aria-hidden="true">Ctrl+Enter</span>
+                </button>
+                <span id="sendFeedback"
+                      class="send-feedback"
+                      role="status"
+                      aria-live="polite"
+                      aria-atomic="true"
+                      hidden></span>
+            </div>
         </div>
     `;
 
-    announce(`${total} boodschap${total !== 1 ? "pen" : ""} gevonden. Gebruik Tab om door de boodschappen te navigeren en druk Enter om te beantwoorden.`);
+    announce(`${total} boodschap${total !== 1 ? "pen" : ""} gevonden. Gebruik Tab om door de boodschappen te navigeren en druk op Beantwoorden om te reageren.`);
 
-    /* ---- Keyboard: Enter/Space to open message ---- */
-    results.querySelectorAll(".message").forEach(messageEl => {
-        messageEl.addEventListener("keydown", (e) => {
-            // If the key came from inside the reply area, let it through — don't intercept
-            if (e.target.closest(".message-reply")) return;
+    /* ---- Send button ---- */
+    document.getElementById("sendButton").addEventListener("click", verstuurAntwoorden);
 
-            if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                openMessage(messageEl);
+    /* ---- Open reply panel ---- */
+    results.querySelectorAll(".open-reply-button").forEach(openBtn => {
+        openBtn.addEventListener("click", () => {
+            const i            = openBtn.dataset.index;
+            const replySection = document.getElementById(`reply-section-${i}`);
+            const voiceBtn     = replySection.querySelector(".voice-reply-button");
+            const messageEl    = openBtn.closest(".message");
+
+            openBtn.hidden = true;
+            replySection.hidden = false;
+            replySection.removeAttribute("aria-hidden");
+            openBtn.setAttribute("aria-expanded", "true");
+            messageEl.classList.add("expanded");
+
+            announce(`Antwoordveld voor boodschap ${parseInt(i) + 1} geopend. U kunt nu een antwoord inspreken of typen.`);
+            if (voiceBtn) voiceBtn.focus();
+        });
+    });
+
+    /* ---- Close reply panel via Sluiten button ---- */
+    results.querySelectorAll(".close-reply-button").forEach(closeBtn => {
+        closeBtn.addEventListener("click", () => {
+            const i            = closeBtn.dataset.index;
+            const replySection = document.getElementById(`reply-section-${i}`);
+            const openBtn      = results.querySelector(`.open-reply-button[data-index="${i}"]`);
+            const messageEl    = closeBtn.closest(".message");
+
+            replySection.hidden = true;
+            replySection.setAttribute("aria-hidden", "true");
+            if (openBtn) {
+                openBtn.hidden = false;
+                openBtn.setAttribute("aria-expanded", "false");
+                openBtn.focus();
             }
+            messageEl.classList.remove("expanded");
+            announce(`Antwoordveld voor boodschap ${parseInt(i) + 1} gesloten.`);
         });
+    });
 
-        messageEl.addEventListener("click", (e) => {
-            if (e.target.closest(".message-reply")) return;
-            openMessage(messageEl);
-        });
-
-        // Close when focus leaves the message entirely and textarea is empty
+    /* ---- Close reply when focus leaves and textarea is empty ---- */
+    results.querySelectorAll(".message").forEach(messageEl => {
         messageEl.addEventListener("focusout", (e) => {
             if (messageEl.contains(e.relatedTarget)) return;
-            closeMessage(messageEl);
+
+            const i            = messageEl.dataset.index;
+            const replySection = document.getElementById(`reply-section-${i}`);
+            const textarea     = document.getElementById(`input-${i}`);
+            const openBtn      = messageEl.querySelector(".open-reply-button");
+
+            if (!replySection || !textarea) return;
+            if (textarea.value.trim() !== "") return;
+
+            replySection.hidden = true;
+            replySection.setAttribute("aria-hidden", "true");
+            if (openBtn) {
+                openBtn.hidden = false;
+                openBtn.setAttribute("aria-expanded", "false");
+            }
+            messageEl.classList.remove("expanded");
         });
     });
 
     /* ---- Voice reply per message ---- */
     let activeReplyRecognition = null;
-    let activeReplyButton = null;
+    let activeReplyButton      = null;
 
     results.querySelectorAll(".voice-reply-button").forEach(button => {
         button.addEventListener("click", (e) => {
             e.stopPropagation();
-            const i = button.dataset.index;
+            const i             = button.dataset.index;
             const replyTextarea = document.getElementById(`input-${i}`);
 
             if (button.classList.contains("recording")) {
@@ -256,7 +398,9 @@ splitButton.addEventListener("click", () => {
                 activeReplyRecognition.stop();
                 activeReplyButton.classList.remove("recording");
                 activeReplyButton.setAttribute("aria-pressed", "false");
-                activeReplyButton.setAttribute("aria-label", `Spreek antwoord in voor boodschap ${parseInt(activeReplyButton.dataset.index) + 1}`);
+                activeReplyButton.setAttribute("aria-label",
+                    `Spreek antwoord in voor boodschap ${parseInt(activeReplyButton.dataset.index) + 1}`
+                );
                 activeReplyButton.querySelector(".voice-reply-label").textContent = "Spreek in";
             }
 
@@ -292,7 +436,9 @@ splitButton.addEventListener("click", () => {
             replyRecognition.onerror = () => {
                 button.classList.remove("recording");
                 button.setAttribute("aria-pressed", "false");
-                button.setAttribute("aria-label", `Spreek antwoord in voor boodschap ${parseInt(i) + 1}`);
+                button.setAttribute("aria-label",
+                    `Spreek antwoord in voor boodschap ${parseInt(i) + 1}`
+                );
                 button.querySelector(".voice-reply-label").textContent = "Spreek in";
                 announce("Microfoon fout. Opname gestopt.");
             };
@@ -300,25 +446,29 @@ splitButton.addEventListener("click", () => {
             replyRecognition.onend = () => {
                 button.classList.remove("recording");
                 button.setAttribute("aria-pressed", "false");
-                button.setAttribute("aria-label", `Spreek antwoord in voor boodschap ${parseInt(i) + 1}`);
+                button.setAttribute("aria-label",
+                    `Spreek antwoord in voor boodschap ${parseInt(i) + 1}`
+                );
                 button.querySelector(".voice-reply-label").textContent = "Spreek in";
                 activeReplyRecognition = null;
-                activeReplyButton = null;
+                activeReplyButton      = null;
                 announce("Opname gestopt. Antwoord opgeslagen in tekstveld.");
             };
 
             replyRecognition.start();
             activeReplyRecognition = replyRecognition;
-            activeReplyButton = button;
+            activeReplyButton      = button;
             button.classList.add("recording");
             button.setAttribute("aria-pressed", "true");
-            button.setAttribute("aria-label", `Stop opname voor boodschap ${parseInt(i) + 1}`);
+            button.setAttribute("aria-label",
+                `Stop opname voor boodschap ${parseInt(i) + 1}`
+            );
             button.querySelector(".voice-reply-label").textContent = "Stop";
             announce(`Opname gestart voor boodschap ${parseInt(i) + 1}. Spreek nu.`);
         });
     });
 
-    // Focus first message so user can start tabbing immediately
-    const firstMessage = results.querySelector(".message");
-    if (firstMessage) firstMessage.focus();
+    /* Move initial focus to first "Beantwoorden" button */
+    const firstOpenBtn = results.querySelector(".open-reply-button");
+    if (firstOpenBtn) firstOpenBtn.focus();
 });
