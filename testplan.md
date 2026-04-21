@@ -245,3 +245,66 @@ Stel deze vragen tijdens of direct na de testtaken. Stel ze open — laat Berend
 tijdens opname word er elke seconden de tijd voorgelezen, zodat je weet hoe lang je al aan het opnemen bent
 bij antwoord invul veld word eerst het bericht gehoord, alleen laten horen als je in dat veld zit alleen laten horen dan dat je "antword op bericht 1" hoort, zodat je weet dat je in het juiste veld zit
 bij de button beantwoorden laat hij 2 keer horen het bericht horen.voor de zelfde knop moet het aria label "antwoorden op...." zijn
+
+
+# Testplan — Iteratie 4
+
+## Wat is er veranderd sinds iteratie 3
+
+- Timer tijdens opname is niet meer hoorbaar via screenreader — hij is puur visueel
+- Antwoordveld kondigt alleen "Antwoord op bericht [nummer]" aan bij focus, niet de volledige berichttekst
+- De knop "Beantwoorden" heeft nu aria-label "Beantwoorden op bericht [nummer]" — geen dubbele aankondiging meer
+
+---
+
+## 1. Functies die we testen
+
+- Opnemen zonder dat de timer elke seconde wordt voorgelezen
+- Antwoordveld: alleen het bericht-nummer horen bij focus, niet de hele tekst
+- Beantwoorden-knop: één duidelijke aankondiging, geen herhaling
+
+---
+
+## 2. Testtaken
+
+Laat Berend de volgende taken uitvoeren. Geef minimale uitleg vooraf — observeer hoe hij het prototype ontdekt.
+
+| # | Taak | Methode | Aandachtspunt |
+|---|---|---|---|
+| 1 | Neem een spraakbericht op van ongeveer 20 seconden. | Microfoon opname | Hoort hij de timer nog? Kan hij ongestoord spreken? |
+| 2 | Plak transcript 1 en splits het op. Tab door de boodschappen. | Tab-toets door de lijst | Worden de boodschappen goed voorgelezen? |
+| 3 | Tab naar de knop "Beantwoorden" van boodschap 1 en luister wat er wordt aangekondigd. | Focus op de knop | Hoort hij de tekst één keer? Geen dubbele aankondiging? |
+| 4 | Druk Enter op "Beantwoorden" van boodschap 2. Tab naar het antwoordveld. | Focus op textarea | Hoort hij "Antwoord op bericht 2"? Wordt de berichttekst zelf niet herhaald? |
+| 5 | Typ een antwoord in boodschap 2 en tab naar het antwoordveld van boodschap 3. | Navigeren tussen velden | Is het elke keer duidelijk bij welk bericht het veld hoort? |
+| 6 | Verstuur alle antwoorden via Ctrl+Enter. | Sneltoets | Hoort hij de bevestiging en het geluidje? |
+
+---
+
+## 3. Vragen tijdens de test
+
+Stel deze vragen tijdens of direct na de testtaken. Stel ze open — laat Berend uitpraten.
+
+| # | Vraag | Doel |
+|---|---|---|
+| 1 | Kon je ongestoord spreken tijdens de opname, of hoorde je nog iets wat afleidde? | Controleren of de timer echt stil is |
+| 2 | Wat hoorde je toen je op de knop "Beantwoorden" stond? Was dat genoeg informatie? | Kwaliteit van het aria-label op de knop beoordelen |
+| 3 | Wat hoorde je toen je in het antwoordveld tabde? Wist je bij welk bericht het hoorde? | Beoordelen of "Antwoord op bericht [nummer]" voldoende context geeft |
+| 4 | Miste je de volledige berichttekst in het antwoordveld, of was het nummer genoeg? | Bepalen of de verkorte aankondiging werkt of te weinig zegt |
+| 5 | Was er iets wat je twee keer hoorde terwijl dat niet nodig was? | Resterende dubbele aankondigingen opsporen |
+| 6 | Wat vond je beter dan de vorige versie? | Verbeteringen bevestigen |
+| 7 | Wat vond je nog steeds verwarrend of frustrerend? | Resterende knelpunten identificeren voor iteratie 5 |
+
+---
+
+## 4. Observatiepunten voor de ontwerper
+
+- Aarzelt Berend bij de Beantwoorden-knop, of navigeert hij er vlot doorheen?
+- Vraagt hij bevestiging bij welk bericht het antwoordveld hoort, of vertrouwt hij de aankondiging?
+- Gaat hij bij lange transcripten (transcript 6) terug naar eerdere boodschappen om de tekst opnieuw te horen?
+- Merkt hij het verschil met de vorige versie bij de timer — benoemt hij het spontaan?
+- Zijn er nieuwe momenten waarop hij stopt of lijkt te wachten op feedback?
+
+---
+
+## Notities tijdens de sessie
+
