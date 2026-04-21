@@ -308,3 +308,5 @@ Stel deze vragen tijdens of direct na de testtaken. Stel ze open — laat Berend
 
 ## Notities tijdens de sessie
 
+- Berend vond het fijn dat de timer niet meer werd voorgelezen, hij kon zich beter concentreren op wat hij wilde zeggen zonder afleiding.
+- Berend had verder geen commentaar op iets, hij vond alles duidelijk en werkte goed. Hij zei dat hij het zo zou gebruiken als het zo live zou gaan, dus dat is een goed teken!
