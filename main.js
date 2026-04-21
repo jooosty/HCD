@@ -120,6 +120,7 @@ recordButton.addEventListener("click", () => {
             seconds++;
             const m = Math.floor(seconds / 60);
             const s = seconds % 60;
+            // Update only the visible text — no aria-live on timer so it is NOT announced every second
             timer.textContent = m + ":" + String(s).padStart(2, "0");
         }, 1000);
     }
@@ -246,13 +247,14 @@ splitButton.addEventListener("click", () => {
                                 <span class="sr-only">Boodschap ${i + 1} van ${total}:</span>${z}
                             </h3>
 
-                            <!-- "Beantwoorden" button — visible until reply is open -->
+                            <!-- aria-label contains bericht number — no aria-describedby to avoid
+                                 the full message text being read a second time after the button label -->
                             <button class="open-reply-button"
                                     type="button"
                                     data-index="${i}"
                                     aria-controls="reply-section-${i}"
                                     aria-expanded="false"
-                                    aria-describedby="msg-heading-${i}">
+                                    aria-label="Beantwoorden op bericht ${i + 1}">
                                 Beantwoorden
                             </button>
 
@@ -276,10 +278,10 @@ splitButton.addEventListener("click", () => {
                                 </div>
 
                                 <label class="field-label" for="input-${i}">
-                                    Antwoord:
+                                    <span class="sr-only">Antwoord op bericht ${i + 1}:</span>
+                                    <span aria-hidden="true">Antwoord:</span>
                                 </label>
                                 <textarea id="input-${i}"
-                                          aria-describedby="msg-heading-${i}"
                                           placeholder="Typ of spreek je antwoord..."></textarea>
 
                                 <button class="close-reply-button"

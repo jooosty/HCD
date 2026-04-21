@@ -178,3 +178,70 @@ sneltoets voor alles ingevulden dingen kunnen versturen
 zinnen kunnen samenvoegen
 geluidje bij verzenden
 geen cursief of dikgedrutkt, normale lettertype maakt niet heel veel uit
+
+
+
+
+
+
+
+# Testplan — Iteratie 3
+
+## Wat is er veranderd sinds iteratie 2
+
+- Zinnen worden voorgelezen bij tabben door de lijst
+- Versturen-knop stuurt alle ingevulde antwoorden tegelijk
+- Sneltoets Ctrl+Enter verstuurt alle antwoorden vanuit elke positie
+- Geluidje bij het versturen als extra auditieve bevestiging
+
+---
+
+## 1. Functies die we testen
+
+- Zinnen voorlezen bij tabben door de lijst
+- Alle antwoorden tegelijk versturen via knop of Ctrl+Enter
+- Geluidje en bevestigingsmelding bij versturen
+
+---
+
+## 2. Testtaken
+
+Laat Berend de volgende taken uitvoeren. Geef minimale uitleg vooraf — observeer hoe hij het prototype ontdekt.
+
+| # | Taak | Methode | Aandachtspunt |
+|---|---|---|---|
+| 1 | Plak transcript 1 en splits het op. Tab daarna door alle boodschappen. | Tab-toets door de lijst | Hoort hij de tekst van elke zin voorgelezen? Is de aankondiging duidelijk en volledig? |
+| 2 | Beantwoord een paar boodschappen en verstuur alles via de Versturen-knop. | Versturen-knop activeren | Hoort hij de bevestigingsmelding? Hoort hij het geluidje? Zijn beide feedbacks duidelijk? |
+| 3 | Verstuur opnieuw via de sneltoets Ctrl+Enter. | Toetsenbordsneltoets | Weet hij de sneltoets te vinden? Werkt het vanuit het tekstveld? |
+
+---
+
+## 3. Vragen tijdens de test
+
+Stel deze vragen tijdens of direct na de testtaken. Stel ze open — laat Berend uitpraten.
+
+| # | Vraag | Doel |
+|---|---|---|
+| 1 | Wat hoorde je toen je door de boodschappen tabde? Was dat genoeg informatie? | Kwaliteit van de zinsaankondiging beoordelen |
+| 2 | Hoorde je de bevestiging bij het versturen? Was die duidelijk? | Kwaliteit van de aria-live melding beoordelen |
+| 3 | Hoorde je het geluidje bij het versturen? Wat vond je ervan? | Bruikbaarheid van het geluidje als feedback beoordelen |
+| 4 | Kende je de sneltoets Ctrl+Enter al, of ontdekte je hem via de knop? | Vindbaarheid van de sneltoets beoordelen |
+| 5 | Wat vond je beter dan de vorige versie? | Verbeteringen bevestigen |
+| 6 | Wat vond je nog steeds verwarrend of frustrerend? | Resterende knelpunten identificeren voor iteratie 4 |
+
+---
+
+## 4. Observatiepunten voor de ontwerper
+
+- Hoort Berend de zinsaankondiging bij tabben, of lijkt hij hem te missen?
+- Is de aankondiging snel genoeg, of is er een merkbare vertraging?
+- Reageert hij op het geluidje bij versturen, of valt het hem niet op?
+- Gebruikt hij Ctrl+Enter spontaan, of alleen nadat hij de knop heeft gezien?
+- Weet hij na het versturen of zijn actie gelukt is?
+
+---
+
+## Notities tijdens de sessie
+tijdens opname word er elke seconden de tijd voorgelezen, zodat je weet hoe lang je al aan het opnemen bent
+bij antwoord invul veld word eerst het bericht gehoord, alleen laten horen als je in dat veld zit alleen laten horen dan dat je "antword op bericht 1" hoort, zodat je weet dat je in het juiste veld zit
+bij de button beantwoorden laat hij 2 keer horen het bericht horen.voor de zelfde knop moet het aria label "antwoorden op...." zijn
