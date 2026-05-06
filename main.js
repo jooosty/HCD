@@ -147,15 +147,21 @@ function splitZinnen(tekst) {
 
 /* ---- Collect all filled answers and send ---- */
 function verstuurAntwoorden() {
-    const antwoorden = [];
+    // Collect all messages (answered or not)
+    const allMessages = [];
     results.querySelectorAll(".message").forEach((messageEl) => {
-        const i           = messageEl.dataset.index;
-        const messageText = messageEl.querySelector(".message-text").textContent.trim();
-        const textarea    = document.getElementById(`input-${i}`);
-        if (textarea && textarea.value.trim()) {
-            antwoorden.push({ boodschap: messageText, antwoord: textarea.value.trim() });
-        }
+        const i          = messageEl.dataset.index;
+        const msgHeading = messageEl.querySelector(".message-text");
+        const srOnly     = msgHeading.querySelector(".sr-only");
+        const messageText = msgHeading.textContent.replace(srOnly ? srOnly.textContent : "", "").trim();
+        const textarea   = document.getElementById(`input-${i}`);
+        allMessages.push({
+            boodschap: messageText,
+            antwoord: textarea && textarea.value.trim() ? textarea.value.trim() : null
+        });
     });
+
+    const antwoorden = allMessages.filter(a => a.antwoord);
 
     if (antwoorden.length === 0) {
         err.textContent = "Geen antwoorden om te versturen.";
@@ -164,23 +170,13 @@ function verstuurAntwoorden() {
     }
 
     playSendSound();
+    announce("Antwoorden verstuurd. Pagina wordt geopend.");
 
-    const samenvatting = antwoorden.map((a, i) =>
-        `Boodschap ${i + 1}: "${a.boodschap}"\nAntwoord: ${a.antwoord}`
-    ).join("\n\n");
-    console.log("Verstuur:\n" + samenvatting);
+    // Save data for antwoorden.html to read
+    sessionStorage.setItem("spraakberichten_antwoorden", JSON.stringify(allMessages));
 
-    const count = antwoorden.length;
-    const msg   = `${count} antwoord${count !== 1 ? "en" : ""} verstuurd.`;
-    announce(msg);
-
-    /* Visible + AT feedback via aria-live region */
-    const sendFeedback = document.getElementById("sendFeedback");
-    if (sendFeedback) {
-        sendFeedback.textContent = "✓ " + msg;
-        sendFeedback.removeAttribute("hidden");
-        setTimeout(() => sendFeedback.setAttribute("hidden", ""), 3500);
-    }
+    // Navigate to the answers page
+    window.location.href = "antwoorden.html";
 }
 
 /* ---- Global Ctrl+Enter / Cmd+Enter shortcut to send ---- */

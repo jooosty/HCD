@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Antwoorden — Spraakberichten</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="chat-body">
+
+    <!-- Live region for screen readers -->
+    <div id="announcer" class="sr-only" aria-live="assertive" aria-atomic="true"></div>
+
+    <!-- Top bar -->
+    <header class="chat-topbar">
+        <button id="backButton" class="chat-back-btn" aria-label="Terug naar berichten">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"/>
+            </svg>
+        </button>
+        <div class="chat-avatar" aria-hidden="true">B</div>
+        <div class="chat-topbar-info">
+            <div class="chat-topbar-name">Berend</div>
+            <div class="chat-topbar-sub">Antwoorden overzicht</div>
+        </div>
+    </header>
+
+    <!-- Scrollable message area -->
+    <main id="chatMessages" class="chat-messages" role="log" aria-label="Gespreksoverzicht" aria-live="polite">
+        <!-- Messages injected by antwoorden.js -->
+    </main>
+
+    <!-- Bottom bar -->
+    <footer class="chat-bottombar">
+        <div class="chat-sent-indicator">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2.5" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Alle antwoorden verstuurd
+        </div>
+    </footer>
+
+    <script src="antwoorden.js"></script>
+</body>
+</html>
