@@ -2,7 +2,7 @@
 
 ## Het Probleem
 
-Berend is blind en gebruikt dagelijks spraakberichten om te communiceren. Meestal neemt hij lange gesproken berichten op of ontvangt hij ze van anderen. Het probleem: die lange berichten bevatten *meerdere onderwerpen tegelijk*. Berend kan er niet snel op reageren, want hij moet het hele bericht horen, alles onthouden, en dan één monolithisch antwoord geven. 
+Berend is blind en gebruikt dagelijks spraakberichten om te communiceren. Meestal neemt hij lange gesproken berichten op of ontvangt hij ze van anderen. Het probleem: die lange berichten bevatten *meerdere onderwerpen tegelijk*. Berend kan er niet snel op reageren, want hij moet het hele bericht horen, alles onthouden, en dan één monolithisch antwoord geven.
 
 De vraag werd: **Hoe kunnen we het voor Berend mogelijk maken om op elk onderwerp in een spraakbericht afzonderlijk te reageren?**
 
@@ -25,7 +25,7 @@ Dit project is gebouwd volgens de **vier principes van Exclusive Design**: Study
 
 ### 1. **Study Situation** - Het Reële Probleem Begrijpen
 
-We begonnen niet met aannames, maar met **vier directe testsessies met Berend**. Dit zijn geen standaard usability tests - dit is co-design met iemand die het product elke dag zou gebruiken.
+We begonnen niet met aannames, maar met **vijf directe testsessies met Berend**. Dit zijn geen standaard usability tests - dit is co-design met iemand die het product elke dag zou gebruiken.
 
 Wat we ontdekten:
 - Berend gebruikt **NVDA screenreader** en navigeert vooral met Tab en Enter
@@ -42,6 +42,7 @@ Een normaal webformulier zou verwachten dat je alles invult en dan één knop in
 - **Enter = Handelingen**: Enter opent een boodschap, Enter activeert de Spreek-in knop. Dit is anders dan een standaard knop die Enter vereist
 - **Automatisch sluiten**: Als je een boodschap opent en wegtabt zonder iets in te vullen, sluit hij automatisch - geen "annuleer" knop nodig
 - **Alle antwoorden tegelijk versturen**: Niet elk antwoord apart, maar één grote "Versturen" knop aan het einde (met sneltoets **Ctrl+Enter**)
+- **Antwoordenpagina als aparte pagina**: De antwoordenoverzicht is een volledig losse HTML-pagina (`antwoorden.html`), zodat de navigatiecontext duidelijk en gefocust blijft
 
 ### 3. **Prioritise Identity** - Berend Staat Centraal
 
@@ -58,10 +59,11 @@ Dit prototype is *voor Berend*, niet voor iedereen. Alles is geoptimaliseerd naa
 - **Geluidje bij versturen**: Een korte, vriendelijke "ding" als alle antwoorden worden opgeslagen - geen streng "fout" of "succes", gewoon een prettige bevestiging
 - **Bericht-nummers**: "Bericht 1, Bericht 2" in plaats van generieke termen - kleine persoonlijkheid
 - **Automatische focus management**: Geen "scroll ernaartoe", geen verwarring - de cursor gaat waar het hoort
+- **Chat-stijl antwoordenpagina**: De antwoorden worden getoond als een echte chatconversatie (imBee-stijl), met geciteerde berichten en groene antwoordbubbles - een vertrouwde, herkenbare interface
 
 ---
 
-## De Vier Testsessies: Hoe We Leerden en Verbeterden
+## De Vijf Testsessies: Hoe We Leerden en Verbeterden
 
 ### **Iteratie 1: 30-31 maart 2026 - Het Begin**
 
@@ -132,7 +134,32 @@ Dit prototype is *voor Berend*, niet voor iedereen. Alles is geoptimaliseerd naa
 
 **Berend's Verdict**: "Ik zou dit zo gebruiken als het live zou gaan. Het voelt klaar."
 
-**Dit is de kracht van co-design:** Vier iteraties, elk gericht op één specifieke persoon. Geen abstracte "best practices", maar concrete oplossingen.
+---
+
+### **Iteratie 5: 6 mei 2026 - Antwoordenpagina als Losse Chatpagina**
+
+**Wat we bouwden:**
+- De antwoordenoverzicht verplaatst naar een **volledig aparte HTML-pagina** (`antwoorden.html`) met eigen JavaScript (`antwoorden.js`)
+- Gegevens worden via `sessionStorage` doorgegeven van de hoofdpagina naar de antwoordenpagina - geen koppeling tussen de twee bestanden op runtimeniveau
+- **Chat-stijl interface** geïnspireerd op imBee: lichtgroene achtergrond, witte inkomende bubbles (originele berichten), groene uitgaande bubbles (antwoorden van Berend)
+- Elke antwoordbubble bevat een **geciteerd blok** met het originele bericht erboven, zodat de context altijd zichtbaar is
+- Alle originele berichten verschijnen eerst bovenaan; alle antwoorden zijn gegroepeerd **onderaan** - overzichtelijk en rustig om doorheen te tabben
+- Berichten zonder antwoord worden simpelweg overgeslagen - geen "geen antwoord gegeven" melding die overbodige ruis geeft
+- **Terug-knop** brengt de gebruiker terug naar `index.html` en herstelt de focus op de verstuur-knop
+
+**Waarom twee losse pagina's?**
+Een aparte pagina geeft Berend een duidelijke mentale grens: eerst reageer je, dan zie je het overzicht. De screenreader start op de nieuwe pagina opnieuw, zonder de ruis van alle vorige elementen. De focus begint direct bij de terug-knop, wat navigatie meteen duidelijk maakt.
+
+**Wat we leerden:**
+- Een losse pagina geeft meer rust dan een overlay of scroll-naar-beneden constructie
+- Het weglaten van "geen antwoord gegeven" meldingen maakt het overzicht strakker en minder verwarrend
+- Antwoorden onderaan groeperen past bij de verwachting: eerst lezen, dan reageren, dan overzien
+
+**Belangrijkste inzicht**: "Minder pagina-elementen op één scherm = minder cognitieve belasting voor de screenreader-gebruiker."
+
+---
+
+**Dit is de kracht van co-design:** Vijf iteraties, elk gericht op één specifieke persoon. Geen abstracte "best practices", maar concrete oplossingen.
 
 ---
 
@@ -147,6 +174,10 @@ Dit prototype is *voor Berend*, niet voor iedereen. Alles is geoptimaliseerd naa
 | Geluidje bij versturen | Auditieve bevestiging voelt zekerder dan tekst | Prioritise Identity + Add Nonsense |
 | Automatisch sluiten | Minder navigatie, intuïtief | Ignore Conventions |
 | Ctrl+Enter sneltoets | Voor ervarenen, verborgen voor beginners | Ignore Conventions + Add Nonsense |
+| Aparte antwoordenpagina | Duidelijke mentale grens, minder ruis voor screenreader | Study Situation + Ignore Conventions |
+| Chat-stijl antwoordoverzicht | Vertrouwde interface, geciteerde context per antwoord | Prioritise Identity + Add Nonsense |
+| Antwoorden onderaan gegroepeerd | Eerst lezen, dan overzien - logische flow | Study Situation |
+| Geen "geen antwoord" melding | Overbodige ruis weghalen = rustiger ervaring | Study Situation + Prioritise Identity |
 
 ---
 
@@ -157,3 +188,4 @@ Dit prototype is *voor Berend*, niet voor iedereen. Alles is geoptimaliseerd naa
 3. **Minder is meer**: Verwijder de kopieerknop, sluit boodschappen automatisch, zeg geen dubbele dingen
 4. **Context doet ertoe**: "Antwoord op bericht 2" is genoeg context - je hoeft niet alles te herhalen
 5. **Tab is je vriend**: Als je Tab snapt, bouw je voor screenreader-gebruikers die Tab *voorkomen*
+6. **Paginagrenzen helpen**: Een aparte pagina voor het antwoordoverzicht geeft de screenreader een schone start en de gebruiker een helder mentaal model
